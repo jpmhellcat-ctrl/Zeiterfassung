@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Tracker</title>
+    <title>Time Tracker Pro</title>
     <style>
         :root {
             --bg-color: #f4f7f6;
             --card-bg: #ffffff;
             --primary: #4361ee;
+            --secondary: #6c757d;
             --success: #2ecc71;
             --danger: #e74c3c;
             --warning: #f39c12;
@@ -61,6 +62,7 @@
 
         button:hover { opacity: 0.8; }
         .btn-primary { background-color: var(--primary); }
+        .btn-secondary { background-color: var(--secondary); }
         .btn-success { background-color: var(--success); }
         .btn-danger { background-color: var(--danger); }
         .btn-export { background-color: var(--warning); color: #fff;}
@@ -68,17 +70,21 @@
         .task-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
+        }
+
+        .task-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
 
         .task-row {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.5fr;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1.5fr;
             gap: 10px;
-            background: var(--card-bg);
             padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             align-items: center;
             transition: all 0.3s ease;
         }
@@ -91,11 +97,21 @@
             box-sizing: border-box;
         }
 
+        .time-display-container {
+            text-align: center;
+        }
+
         .time-display {
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-family: monospace;
             font-weight: bold;
-            text-align: center;
+            color: var(--primary);
+        }
+
+        .time-label {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            text-transform: uppercase;
         }
 
         .actions {
@@ -123,6 +139,44 @@
             font-size: 0.9em;
             color: var(--text-muted);
         }
+
+        .task-details {
+            display: none;
+            padding: 15px;
+            background-color: #fafafa;
+            border-top: 1px solid var(--border);
+            font-size: 0.9em;
+        }
+
+        .task-details.active {
+            display: block;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .session-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .session-table th, .session-table td {
+            border: 1px solid var(--border);
+            padding: 6px;
+            text-align: left;
+        }
+        
+        .session-table th {
+            background-color: #eee;
+        }
+        
+        .meta-info p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -130,29 +184,74 @@
 <div class="container">
     <header>
         <div>
-            <h1>Projektzeiten buchen</h1>
+            <h1>Project Time Tracker</h1>
             <div class="settings-toggle">
-                <input type="checkbox" id="warn-toggle" checked>
-                <label for="warn-toggle">Warnung bei parallelen Timern (wenn aus, wird der alte automatisch gestoppt)</label>
+                <input type="checkbox" id="warn-toggle" checked onchange="saveSettings()">
+                <label for="warn-toggle">Warning on parallel timers (if unchecked, old timer stops automatically)</label>
             </div>
         </div>
         <div class="header-controls">
-            <div class="total-display">Gesamt: <span id="global-total">00:00:00</span></div>
-            <button class="btn-primary" onclick="addTask()">+ Neue Zeile</button>
-            <button class="btn-export" onclick="exportAll()">Alle Exportieren</button>
+            <div class="total-display">Total: <span id="global-total">00:00:00</span></div>
+            <button class="btn-primary" onclick="addTask()">+ Add Task</button>
+            <button class="btn-export" onclick="exportAll()">Export All</button>
         </div>
     </header>
 
     <div class="task-list" id="task-list">
-        <!-- Aufgaben werden hier dynamisch eingefügt -->
+        <!-- Tasks will be dynamically inserted here -->
     </div>
 </div>
 
 <script>
+    const STORAGE_KEY = 'timeTrackerTasks_v2';
     let tasks = {};
-    let timerInterval = null;
 
-    // Hilfsfunktion: Millisekunden in HH:MM:SS formatieren
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const oldSaved = localStorage.getItem('timeTrackerTasks_v1');
+        
+        if (saved) {
+            tasks = JSON.parse(saved);
+            Object.values(tasks).forEach(t => {
+                if(!t.sessions) t.sessions = [];
+            });
+            renderTasks();
+        } else if (oldSaved) {
+            let oldTasks = JSON.parse(oldSaved);
+            Object.values(oldTasks).forEach(t => {
+                t.createdAt = Date.now();
+                t.sessions = [];
+                for(let date in t.history) {
+                    t.sessions.push({
+                        start: new Date(date).getTime(),
+                        end: new Date(date).getTime() + t.history[date],
+                        duration: t.history[date],
+                        migrated: true
+                    });
+                }
+                tasks[t.id] = t;
+            });
+            saveData();
+            renderTasks();
+        } else {
+            addTask();
+        }
+        
+        const settings = localStorage.getItem('timeTrackerSettings');
+        if(settings) {
+            document.getElementById('warn-toggle').checked = JSON.parse(settings).warnToggle;
+        }
+    }
+
+    function saveSettings() {
+        const warnToggle = document.getElementById('warn-toggle').checked;
+        localStorage.setItem('timeTrackerSettings', JSON.stringify({ warnToggle }));
+    }
+
     function formatTime(ms) {
         let totalSeconds = Math.floor(ms / 1000);
         let hours = Math.floor(totalSeconds / 3600);
@@ -161,12 +260,16 @@
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    // Hilfsfunktion: Datum formatieren (YYYY-MM-DD)
+    function formatDateTime(timestamp) {
+        if (!timestamp) return "-";
+        const d = new Date(timestamp);
+        return d.toLocaleString('en-GB'); 
+    }
+
     function getTodayString() {
         return new Date().toISOString().split('T')[0];
     }
 
-    // Aufgabe hinzufügen
     function addTask() {
         const id = Date.now().toString();
         tasks[id] = {
@@ -176,78 +279,78 @@
             dueDate: '',
             isRunning: false,
             startTime: null,
-            currentSessionMs: 0,
-            history: {} // Format: { '2026-08-19': 3600000, ... }
+            createdAt: Date.now(), 
+            sessions: []           
         };
+        saveData();
         renderTasks();
     }
 
-    // Gesamtzeit einer Aufgabe berechnen
     function getTaskTotalTime(task) {
-        let total = 0;
-        for (let date in task.history) {
-            total += task.history[date];
-        }
-        total += task.currentSessionMs;
+        let total = task.sessions.reduce((sum, session) => sum + session.duration, 0);
         return total;
     }
 
-    // Timer starten
     function startTimer(id) {
         const warnToggle = document.getElementById('warn-toggle').checked;
         const activeTasks = Object.values(tasks).filter(t => t.isRunning && t.id !== id);
 
         if (activeTasks.length > 0) {
             if (warnToggle) {
-                const proceed = confirm("Ein anderer Timer läuft bereits! Möchtest du diesen Timer trotzdem starten?");
+                const proceed = confirm("Another timer is already running! Do you want to start this timer anyway?");
                 if (!proceed) return;
             } else {
-                // Wenn Warnung aus ist, alle anderen stoppen
                 activeTasks.forEach(t => stopTimer(t.id));
             }
         }
 
         tasks[id].isRunning = true;
         tasks[id].startTime = Date.now();
+        saveData();
         renderTasks();
     }
 
-    // Timer stoppen
     function stopTimer(id) {
         const task = tasks[id];
         if (!task.isRunning) return;
 
+        const endTime = Date.now();
+        const duration = endTime - task.startTime;
+
+        task.sessions.push({
+            start: task.startTime,
+            end: endTime,
+            duration: duration
+        });
+
         task.isRunning = false;
-        const elapsed = Date.now() - task.startTime;
-        task.currentSessionMs += elapsed;
-        
-        // Zur Historie des heutigen Tages hinzufügen
-        const today = getTodayString();
-        if (!task.history[today]) task.history[today] = 0;
-        task.history[today] += task.currentSessionMs;
-        
-        task.currentSessionMs = 0; // Reset session
         task.startTime = null;
+        
+        saveData();
         renderTasks();
     }
 
-    // Aufgabe löschen
+    function toggleDetails(id) {
+        const detailsDiv = document.getElementById(`details-${id}`);
+        detailsDiv.classList.toggle('active');
+    }
+
     function deleteTask(id) {
-        if(confirm("Zeile wirklich löschen?")) {
+        if(confirm("Are you sure you want to delete this row and all tracked time?")) {
             delete tasks[id];
+            saveData();
             renderTasks();
         }
     }
 
-    // Daten aktualisieren bei Eingabe
     function updateField(id, field, value) {
         tasks[id][field] = value;
+        saveData();
         if(field === 'dueDate') {
             checkDueDates();
         }
     }
 
-    // Fälligkeitsdaten prüfen (Färbt das Feld 7 Tage vorher rot)
     function checkDueDates() {
         const today = new Date();
         today.setHours(0,0,0,0);
@@ -268,9 +371,10 @@
         });
     }
 
-    // UI Rendern
     function renderTasks() {
         const list = document.getElementById('task-list');
+        const openDetails = Array.from(document.querySelectorAll('.task-details.active')).map(el => el.id.replace('details-', ''));
+        
         list.innerHTML = '';
         let globalTotalMs = 0;
 
@@ -278,71 +382,117 @@
             const taskTotal = getTaskTotalTime(task);
             globalTotalMs += taskTotal;
 
-            const row = document.createElement('div');
-            row.className = `task-row`;
-            row.id = `row-${task.id}`;
+            const container = document.createElement('div');
+            container.className = 'task-container';
+            container.id = `container-${task.id}`;
 
-            row.innerHTML = `
-                <input type="text" placeholder="Aufgabenbeschreibung..." value="${task.name}" onchange="updateField('${task.id}', 'name', this.value)">
-                
-                <div>
-                    <small>Geschätzt (h):</small><br>
-                    <input type="number" step="0.5" placeholder="Std." value="${task.estimatedHours}" onchange="updateField('${task.id}', 'estimatedHours', this.value)">
-                </div>
-                
-                <div>
-                    <small>Fällig am:</small><br>
-                    <input type="date" value="${task.dueDate}" onchange="updateField('${task.id}', 'dueDate', this.value)">
-                </div>
+            let sessionsHtml = '';
+            if (task.sessions.length === 0) {
+                sessionsHtml = '<tr><td colspan="3">No time tracked yet.</td></tr>';
+            } else {
+                task.sessions.forEach((s, index) => {
+                    sessionsHtml += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${formatDateTime(s.start)} to ${formatDateTime(s.end)}</td>
+                            <td>${formatTime(s.duration)}</td>
+                        </tr>
+                    `;
+                });
+            }
 
-                <div class="time-display" id="time-${task.id}">
-                    ${formatTime(taskTotal)}
-                </div>
+            container.innerHTML = `
+                <div class="task-row ${task.dueDate ? 'has-due' : ''}" id="row-${task.id}">
+                    <input type="text" placeholder="Task description..." value="${task.name}" onchange="updateField('${task.id}', 'name', this.value)">
+                    
+                    <div>
+                        <small>Estimated (h):</small><br>
+                        <input type="number" step="0.5" placeholder="hrs" value="${task.estimatedHours}" onchange="updateField('${task.id}', 'estimatedHours', this.value)">
+                    </div>
+                    
+                    <div>
+                        <small>Due Date:</small><br>
+                        <input type="date" value="${task.dueDate}" onchange="updateField('${task.id}', 'dueDate', this.value)">
+                    </div>
 
-                <div class="actions">
-                    ${task.isRunning 
-                        ? `<button class="btn-danger" onclick="stopTimer('${task.id}')">Stop</button>` 
-                        : `<button class="btn-success" onclick="startTimer('${task.id}')">Start</button>`
-                    }
+                    <div class="time-display-container">
+                        <div class="time-label">Total Time</div>
+                        <div class="time-display" id="time-${task.id}">${formatTime(taskTotal)}</div>
+                    </div>
+
+                    <div class="actions">
+                        ${task.isRunning 
+                            ? `<button class="btn-danger" onclick="stopTimer('${task.id}')">Stop</button>` 
+                            : `<button class="btn-success" onclick="startTimer('${task.id}')">Start</button>`
+                        }
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="btn-secondary" onclick="toggleDetails('${task.id}')">Details</button>
+                        <button class="btn-export" onclick="exportSingle('${task.id}')">Export</button>
+                        <button class="btn-danger" onclick="deleteTask('${task.id}')">X</button>
+                    </div>
                 </div>
                 
-                <div class="actions">
-                    <button class="btn-export" onclick="exportSingle('${task.id}')">Export</button>
-                    <button class="btn-danger" onclick="deleteTask('${task.id}')">X</button>
+                <div class="task-details ${openDetails.includes(task.id) ? 'active' : ''}" id="details-${task.id}">
+                    <div class="details-grid">
+                        <div class="meta-info">
+                            <strong>Task Details:</strong>
+                            <p>Created at: ${formatDateTime(task.createdAt)}</p>
+                            <p>Number of sessions: ${task.sessions.length}</p>
+                            <p>Current status: <span style="color: ${task.isRunning ? 'red' : 'green'}">${task.isRunning ? 'Timer running...' : 'Paused'}</span></p>
+                        </div>
+                        <div>
+                            <strong>Session History (From - To):</strong>
+                            <div style="max-height: 150px; overflow-y: auto;">
+                                <table class="session-table">
+                                    <thead>
+                                        <tr>
+                                            <th>No.</th>
+                                            <th>Time Period</th>
+                                            <th>Duration</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${sessionsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
-            list.appendChild(row);
+            list.appendChild(container);
         });
 
         document.getElementById('global-total').innerText = formatTime(globalTotalMs);
         checkDueDates();
     }
 
-    // Main Loop für laufende Timer (Aktualisiert die Zeit jede Sekunde)
     setInterval(() => {
         let globalTotalMs = 0;
         
         Object.values(tasks).forEach(task => {
+            let taskTotal = getTaskTotalTime(task);
+            
             if (task.isRunning) {
                 const elapsed = Date.now() - task.startTime;
-                const displayTotal = getTaskTotalTime(task) + elapsed - task.currentSessionMs; // Temporäre Addition für Anzeige
+                taskTotal += elapsed;
+                
                 const timeEl = document.getElementById(`time-${task.id}`);
-                if (timeEl) timeEl.innerText = formatTime(displayTotal);
-                globalTotalMs += displayTotal;
-            } else {
-                globalTotalMs += getTaskTotalTime(task);
+                if (timeEl) timeEl.innerText = formatTime(taskTotal);
             }
+            
+            globalTotalMs += taskTotal;
         });
 
-        // Globales Total updaten, wenn mindestens ein Timer läuft
         if (Object.values(tasks).some(t => t.isRunning)) {
             document.getElementById('global-total').innerText = formatTime(globalTotalMs);
         }
     }, 1000);
 
-    // CSV Export Logik
     function downloadCSV(csvContent, filename) {
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
@@ -354,50 +504,47 @@
     }
 
     function generateCSVLines(tasksToExport) {
-        let lines = ["Aufgabe;Datum;Dauer;Geschätzte Zeit (h);Fälligkeitsdatum"];
-        let totalAll = 0;
+        let lines = ["Task;Session Start;Session End;Duration (Session);Total Task (So far);Estimated (h);Due Date;Created At"];
+        let globalTotalAll = 0;
 
         tasksToExport.forEach(task => {
-            let hasHistory = false;
-            
-            // Wenn der Timer gerade läuft, speichern wir die aktuelle Session vor dem Export ab
             if(task.isRunning) {
                 stopTimer(task.id);
-                startTimer(task.id); // Sofort wieder starten
+                startTimer(task.id); 
             }
 
-            for (const [date, ms] of Object.entries(task.history)) {
-                if(ms > 0) {
-                    lines.push(`${task.name || 'Ohne Titel'};${date};${formatTime(ms)};${task.estimatedHours};${task.dueDate}`);
-                    totalAll += ms;
-                    hasHistory = true;
-                }
-            }
-            // Falls noch gar keine Zeit gebucht wurde, aber die Aufgabe existiert
-            if(!hasHistory) {
-                lines.push(`${task.name || 'Ohne Titel'};Keine Buchungen;00:00:00;${task.estimatedHours};${task.dueDate}`);
+            const taskTotal = getTaskTotalTime(task);
+            globalTotalAll += taskTotal;
+            const taskName = task.name || 'Untitled';
+            const createdAt = formatDateTime(task.createdAt);
+
+            if (task.sessions.length === 0) {
+                lines.push(`${taskName};-;-;00:00:00;00:00:00;${task.estimatedHours};${task.dueDate};${createdAt}`);
+            } else {
+                task.sessions.forEach(s => {
+                    lines.push(`${taskName};${formatDateTime(s.start)};${formatDateTime(s.end)};${formatTime(s.duration)};${formatTime(taskTotal)};${task.estimatedHours};${task.dueDate};${createdAt}`);
+                });
             }
         });
 
         lines.push("");
-        lines.push(`Total aller Zeiten;;${formatTime(totalAll)};;`);
+        lines.push(`Total of all tasks;;;;${formatTime(globalTotalAll)};;;`);
         return lines.join("\n");
     }
 
     function exportSingle(id) {
         const task = tasks[id];
         const csv = generateCSVLines([task]);
-        downloadCSV(csv, `export_${task.name || 'aufgabe'}.csv`);
+        downloadCSV(csv, `export_${task.name || 'task'}_${getTodayString()}.csv`);
     }
 
     function exportAll() {
         const csv = generateCSVLines(Object.values(tasks));
-        downloadCSV(csv, `timetracking_alle_${getTodayString()}.csv`);
+        downloadCSV(csv, `timetracking_complete_${getTodayString()}.csv`);
     }
 
-    // Initiale leere Zeile beim ersten Laden
     window.onload = () => {
-        addTask();
+        loadData();
     };
 </script>
 
