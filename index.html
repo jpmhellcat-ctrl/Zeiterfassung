@@ -13,6 +13,7 @@
             --success: #2ecc71;
             --danger: #e74c3c;
             --warning: #f39c12;
+            --info: #8e44ad;
             --text-main: #333333;
             --text-muted: #7f8c8d;
             --border: #e0e0e0;
@@ -26,10 +27,7 @@
             padding: 20px;
         }
 
-        .container {
-            max-width: 1250px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1250px; margin: 0 auto; }
 
         header {
             display: flex;
@@ -63,19 +61,10 @@
             outline: none;
         }
         
-        .filters-bar input:focus, .filters-bar select:focus {
-            border-color: var(--primary);
-        }
+        .filters-bar input:focus, .filters-bar select:focus { border-color: var(--primary); }
+        .filters-bar input { flex: 1; }
 
-        .filters-bar input {
-            flex: 1;
-        }
-
-        .header-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
+        .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
 
         button {
             padding: 10px 15px;
@@ -92,13 +81,12 @@
         .btn-secondary { background-color: var(--secondary); }
         .btn-success { background-color: var(--success); }
         .btn-danger { background-color: var(--danger); }
+        .btn-warning { background-color: var(--warning); color: #fff; }
         .btn-export { background-color: var(--warning); color: #fff;}
+        .btn-info { background-color: var(--info); color: #fff; }
+        .btn-small { padding: 4px 8px; font-size: 0.85em; }
 
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .task-list { display: flex; flex-direction: column; gap: 15px; }
 
         .task-container {
             background: var(--card-bg);
@@ -108,15 +96,8 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        /* Drag & Drop Styles */
-        .task-container.dragging {
-            opacity: 0.4;
-        }
-
-        .task-container.drag-over {
-            border: 2px dashed var(--primary);
-            transform: scale(0.99);
-        }
+        .task-container.dragging { opacity: 0.4; }
+        .task-container.drag-over { border: 2px dashed var(--primary); transform: scale(0.99); }
 
         .task-row {
             display: grid;
@@ -127,119 +108,65 @@
         }
 
         .drag-handle {
-            cursor: grab;
-            font-size: 1.2em;
-            color: #adb5bd;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            cursor: grab; font-size: 1.2em; color: #adb5bd;
+            user-select: none; display: flex; align-items: center; justify-content: center;
         }
-        
-        .drag-handle:active {
-            cursor: grabbing;
-        }
+        .drag-handle:active { cursor: grabbing; }
 
         .task-row input[type="text"], .task-row input[type="number"], .task-row input[type="date"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            box-sizing: border-box;
+            width: 100%; padding: 8px; border: 1px solid var(--border);
+            border-radius: 4px; box-sizing: border-box; font-family: inherit;
         }
 
-        .time-display-container {
-            text-align: center;
-        }
+        .time-display-container { text-align: center; }
+        .time-display { font-size: 1.3em; font-family: monospace; font-weight: bold; color: var(--primary); }
+        .time-label { font-size: 0.75em; color: var(--text-muted); text-transform: uppercase; }
+        .actions { display: flex; gap: 5px; justify-content: flex-end; }
+        .due-soon input[type="date"] { background-color: #ffeaea; border-color: var(--danger); color: var(--danger); font-weight: bold; }
 
-        .time-display {
-            font-size: 1.3em;
-            font-family: monospace;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .time-label {
-            font-size: 0.75em;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .actions {
-            display: flex;
-            gap: 5px;
-            justify-content: flex-end;
-        }
-
-        .due-soon input[type="date"] {
-            background-color: #ffeaea;
-            border-color: var(--danger);
-            color: var(--danger);
-            font-weight: bold;
-        }
-
-        .total-display {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-        
-        .total-label {
-            font-size: 0.5em;
-            color: var(--text-muted);
-            display: block;
-            margin-top: -5px;
-        }
-
-        .settings-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
-            color: var(--text-muted);
-        }
+        .total-display { font-size: 1.5em; font-weight: bold; }
+        .total-label { font-size: 0.5em; color: var(--text-muted); display: block; margin-top: -5px; }
+        .settings-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.9em; color: var(--text-muted); }
 
         .task-details {
-            display: none;
-            padding: 15px;
-            background-color: #fafafa;
-            border-top: 1px solid var(--border);
-            font-size: 0.9em;
+            display: none; padding: 15px; background-color: #fafafa;
+            border-top: 1px solid var(--border); font-size: 0.9em;
         }
+        .task-details.active { display: block; }
+        .details-grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 20px; }
 
-        .task-details.active {
-            display: block;
-        }
+        .session-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .session-table th, .session-table td { border: 1px solid var(--border); padding: 8px; text-align: left; vertical-align: top;}
+        .session-table th { background-color: #eee; }
+        .meta-info p { margin: 5px 0; }
+        
+        .edit-input-group { margin-bottom: 5px; }
+        .edit-input-group input { padding: 4px; border: 1px solid var(--border); border-radius: 3px; font-size: 0.9em;}
 
-        .details-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-        }
-
-        .session-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        .session-table th, .session-table td {
-            border: 1px solid var(--border);
-            padding: 6px;
-            text-align: left;
+        /* DRUCK- UND PDF-STILANWEISUNGEN (Read-Only Ansicht) */
+        @media print {
+            body { background: #fff; padding: 0; color: #000; }
+            header, .filters-bar, .drag-handle, .actions, .settings-toggle { display: none !important; }
+            h1::after { content: " (Read-Only Report)"; font-size: 0.6em; color: #666; }
+            .task-row input[type="text"], .task-row input[type="number"], .task-row input[type="date"] {
+                border: none; background: transparent; padding: 0; color: #000; font-weight: bold; width: auto;
+            }
+            .task-container { box-shadow: none; border: 1px solid #ccc; margin-bottom: 20px; page-break-inside: avoid; }
+            .task-row { grid-template-columns: 2fr 1fr 1fr 1fr; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px; }
+            .task-details { display: block !important; background: transparent; }
+            .session-table th { background-color: #f8f8f8 !important; -webkit-print-color-adjust: exact; }
+            del { color: #888; }
+            #print-header { display: block !important; text-align: center; margin-bottom: 20px; font-size: 1.5em; font-weight: bold;}
         }
         
-        .session-table th {
-            background-color: #eee;
-        }
-        
-        .meta-info p {
-            margin: 5px 0;
-        }
+        #print-header { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div id="print-header">Time Tracking Report - <span id="print-date"></span></div>
+
     <header>
         <div>
             <h1>Project Time Tracker</h1>
@@ -249,12 +176,18 @@
             </div>
         </div>
         <div class="header-controls">
-            <div style="text-align: right;">
+            <div style="text-align: right; margin-right: 15px;">
                 <div class="total-display"><span id="global-total">00:00:00</span></div>
                 <span class="total-label">Total Time (All Tasks)</span>
             </div>
+            
+            <input type="file" id="json-import-file" style="display: none;" accept=".json" onchange="importJSON(event)">
+            
+            <button class="btn-info" onclick="document.getElementById('json-import-file').click()" title="Import Data">📥 JSON</button>
+            <button class="btn-info" onclick="exportJSON()" title="Backup Data">📤 JSON</button>
+            <button class="btn-secondary" onclick="exportPDF()">📄 Save as PDF</button>
+            <button class="btn-export" onclick="exportCSVProtected()">🔒 CSV Export</button>
             <button class="btn-primary" onclick="addTask()">+ Add Task</button>
-            <button class="btn-export" onclick="exportAll()">Export All</button>
         </div>
     </header>
 
@@ -274,60 +207,38 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'timeTrackerTasks_v2';
+    // ==========================================
+    // DEIN PASSWORT FÜR DEN CSV-EXPORT
+    // ==========================================
+    const CSV_PASSWORD = "LTGSwitzerlandZeit"; 
+    
+    const STORAGE_KEY = 'timeTrackerTasks_v3';
     let tasks = {};
-    let draggedTaskId = null; // Für Drag & Drop
+    let draggedTaskId = null;
+    let editState = { taskId: null, sessionIndex: null };
 
-    // --- DATA & MIGRATION ---
-    function saveData() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    }
+    document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-GB');
+
+    // --- DATA HANDLING ---
+    function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
 
     function normalizeOrder() {
         let sorted = Object.values(tasks).sort((a, b) => (a.order || 0) - (b.order || 0));
-        sorted.forEach((t, index) => {
-            t.order = index;
-            tasks[t.id] = t;
-        });
+        sorted.forEach((t, index) => { t.order = index; tasks[t.id] = t; });
     }
 
     function loadData() {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const oldSaved = localStorage.getItem('timeTrackerTasks_v1');
-        
-        if (saved) {
-            tasks = JSON.parse(saved);
-            Object.values(tasks).forEach(t => {
-                if(!t.sessions) t.sessions = [];
-            });
+        const savedV3 = localStorage.getItem(STORAGE_KEY);
+        if (savedV3) {
+            tasks = JSON.parse(savedV3);
+            Object.values(tasks).forEach(t => { if(!t.sessions) t.sessions = []; });
             normalizeOrder();
-            renderTasks();
-        } else if (oldSaved) {
-            let oldTasks = JSON.parse(oldSaved);
-            Object.values(oldTasks).forEach(t => {
-                t.createdAt = Date.now();
-                t.sessions = [];
-                for(let date in t.history) {
-                    t.sessions.push({
-                        start: new Date(date).getTime(),
-                        end: new Date(date).getTime() + t.history[date],
-                        duration: t.history[date],
-                        migrated: true
-                    });
-                }
-                tasks[t.id] = t;
-            });
-            normalizeOrder();
-            saveData();
             renderTasks();
         } else {
             addTask();
         }
-        
         const settings = localStorage.getItem('timeTrackerSettings');
-        if(settings) {
-            document.getElementById('warn-toggle').checked = JSON.parse(settings).warnToggle;
-        }
+        if(settings) document.getElementById('warn-toggle').checked = JSON.parse(settings).warnToggle;
     }
 
     function saveSettings() {
@@ -335,8 +246,9 @@
         localStorage.setItem('timeTrackerSettings', JSON.stringify({ warnToggle }));
     }
 
-    // --- FORMATTING ---
+    // --- FORMATTING HELPERS ---
     function formatTime(ms) {
+        if(ms < 0) return "00:00:00";
         let totalSeconds = Math.floor(ms / 1000);
         let hours = Math.floor(totalSeconds / 3600);
         let minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -346,33 +258,28 @@
 
     function formatDateTime(timestamp) {
         if (!timestamp) return "-";
-        const d = new Date(timestamp);
-        return d.toLocaleString('en-GB'); 
+        return new Date(timestamp).toLocaleString('en-GB'); 
     }
 
-    function getTodayString() {
-        return new Date().toISOString().split('T')[0];
+    function getTodayString() { return new Date().toISOString().split('T')[0]; }
+
+    function toDatetimeLocal(timestamp) {
+        const d = new Date(timestamp);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 16);
     }
 
     // --- TASK ACTIONS ---
     function addTask() {
         const id = Date.now().toString();
         tasks[id] = {
-            id: id,
-            name: '',
-            estimatedHours: '',
-            dueDate: '',
-            isRunning: false,
-            startTime: null,
-            createdAt: Date.now(), 
-            sessions: [],
-            order: Object.keys(tasks).length 
+            id: id, name: '', estimatedHours: '', dueDate: '',
+            isRunning: false, startTime: null, createdAt: Date.now(), 
+            sessions: [], order: Object.keys(tasks).length 
         };
         saveData();
-        
         document.getElementById('search-filter').value = '';
         document.getElementById('status-filter').value = 'all';
-        
         renderTasks();
     }
 
@@ -386,171 +293,114 @@
 
         if (activeTasks.length > 0) {
             if (warnToggle) {
-                const proceed = confirm("Another timer is already running! Do you want to start this timer anyway?");
-                if (!proceed) return;
+                if (!confirm("Another timer is already running! Do you want to start this timer anyway?")) return;
             } else {
                 activeTasks.forEach(t => stopTimer(t.id));
             }
         }
-
         tasks[id].isRunning = true;
         tasks[id].startTime = Date.now();
-        saveData();
-        renderTasks();
+        saveData(); renderTasks();
     }
 
     function stopTimer(id) {
         const task = tasks[id];
         if (!task.isRunning) return;
-
         const endTime = Date.now();
-        const duration = endTime - task.startTime;
-
         task.sessions.push({
-            start: task.startTime,
-            end: endTime,
-            duration: duration
+            start: task.startTime, end: endTime, duration: endTime - task.startTime, edited: false
         });
-
-        task.isRunning = false;
-        task.startTime = null;
-        
-        saveData();
-        renderTasks();
+        task.isRunning = false; task.startTime = null;
+        saveData(); renderTasks();
     }
 
-    function toggleDetails(id) {
-        const detailsDiv = document.getElementById(`details-${id}`);
-        detailsDiv.classList.toggle('active');
-    }
+    function toggleDetails(id) { document.getElementById(`details-${id}`).classList.toggle('active'); }
 
     function deleteTask(id) {
         if(confirm("Are you sure you want to delete this row and all tracked time?")) {
-            delete tasks[id];
-            normalizeOrder(); 
-            saveData();
-            renderTasks();
+            delete tasks[id]; normalizeOrder(); saveData(); renderTasks();
         }
     }
 
     function updateField(id, field, value) {
-        tasks[id][field] = value;
-        saveData();
-        if(field === 'dueDate') {
-            checkDueDates();
+        tasks[id][field] = value; saveData();
+        if(field === 'dueDate') checkDueDates();
+        if(field === 'name') applyFilters();
+    }
+
+    // --- EDIT SESSION LOGIC ---
+    function startEditSession(taskId, index) { editState = { taskId, sessionIndex: index }; renderTasks(); }
+    function cancelEditSession() { editState = { taskId: null, sessionIndex: null }; renderTasks(); }
+
+    function saveEditSession(taskId, index) {
+        const startStr = document.getElementById(`edit-start-${taskId}-${index}`).value;
+        const endStr = document.getElementById(`edit-end-${taskId}-${index}`).value;
+
+        if (!startStr || !endStr) return alert("Please provide both a start and an end time.");
+        const startTs = new Date(startStr).getTime(), endTs = new Date(endStr).getTime();
+        if (endTs - startTs < 0) return alert("Error: End time cannot be before start time.");
+
+        const session = tasks[taskId].sessions[index];
+        if (!session.edited) {
+            session.originalStart = session.start; session.originalEnd = session.end;
+            session.originalDuration = session.duration; session.edited = true;
         }
-        if(field === 'name') {
-            applyFilters();
+        session.start = startTs; session.end = endTs; session.duration = endTs - startTs;
+        editState = { taskId: null, sessionIndex: null }; saveData(); renderTasks();
+    }
+
+    function revertSession(taskId, index) {
+        if(confirm("Revert this session to its original tracked time?")) {
+            const session = tasks[taskId].sessions[index];
+            if (session.edited) {
+                session.start = session.originalStart; session.end = session.originalEnd;
+                session.duration = session.originalDuration; session.edited = false;
+                saveData(); renderTasks();
+            }
         }
     }
 
     // --- DRAG AND DROP ---
-    function handleDragStart(e, id) {
-        draggedTaskId = id;
-        e.dataTransfer.effectAllowed = 'move';
-        setTimeout(() => {
-            e.target.classList.add('dragging');
-        }, 0);
-    }
-
-    function handleDragOver(e) {
-        e.preventDefault(); 
-        e.dataTransfer.dropEffect = 'move';
-        return false;
-    }
-
-    function handleDragEnter(e) {
-        e.preventDefault();
-        const container = e.target.closest('.task-container');
-        if (container && container.id !== `container-${draggedTaskId}`) {
-            container.classList.add('drag-over');
-        }
-    }
-
-    function handleDragLeave(e) {
-        const container = e.target.closest('.task-container');
-        if (container) {
-            container.classList.remove('drag-over');
-        }
-    }
-
+    function handleDragStart(e, id) { draggedTaskId = id; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => e.target.classList.add('dragging'), 0); }
+    function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
+    function handleDragEnter(e) { e.preventDefault(); const c = e.target.closest('.task-container'); if (c && c.id !== `container-${draggedTaskId}`) c.classList.add('drag-over'); }
+    function handleDragLeave(e) { const c = e.target.closest('.task-container'); if (c) c.classList.remove('drag-over'); }
     function handleDrop(e, targetId) {
-        e.stopPropagation();
-        const container = e.target.closest('.task-container');
-        if (container) {
-            container.classList.remove('drag-over');
-        }
-
+        e.stopPropagation(); const c = e.target.closest('.task-container'); if (c) c.classList.remove('drag-over');
         if (draggedTaskId && draggedTaskId !== targetId) {
-            const sortedTasks = Object.values(tasks).sort((a, b) => a.order - b.order);
-            const draggedIndex = sortedTasks.findIndex(t => t.id === draggedTaskId);
-            const targetIndex = sortedTasks.findIndex(t => t.id === targetId);
-
-            // Aufgabe aus Array nehmen und an neuer Stelle einfügen
-            const [draggedTask] = sortedTasks.splice(draggedIndex, 1);
-            sortedTasks.splice(targetIndex, 0, draggedTask);
-
-            // Neue Reihenfolge abspeichern
-            sortedTasks.forEach((t, index) => {
-                tasks[t.id].order = index;
-            });
-
-            saveData();
-            renderTasks();
+            const sorted = Object.values(tasks).sort((a, b) => a.order - b.order);
+            const dragged = sorted.splice(sorted.findIndex(t => t.id === draggedTaskId), 1)[0];
+            sorted.splice(sorted.findIndex(t => t.id === targetId), 0, dragged);
+            sorted.forEach((t, i) => { tasks[t.id].order = i; });
+            saveData(); renderTasks();
         }
-        draggedTaskId = null;
-        return false;
+        draggedTaskId = null; return false;
     }
-
     function handleDragEnd(e) {
         e.target.classList.remove('dragging');
         document.querySelectorAll('.task-container').forEach(c => c.classList.remove('drag-over'));
         draggedTaskId = null;
     }
 
-    // --- FILTERING ---
     function applyFilters() {
-        const searchText = document.getElementById('search-filter').value.toLowerCase();
-        const statusFilter = document.getElementById('status-filter').value;
-
+        const text = document.getElementById('search-filter').value.toLowerCase();
+        const stat = document.getElementById('status-filter').value;
         Object.values(tasks).forEach(task => {
-            const container = document.getElementById(`container-${task.id}`);
-            if (!container) return;
-
-            let matchesSearch = true;
-            if (searchText) {
-                matchesSearch = (task.name || '').toLowerCase().includes(searchText);
-            }
-
-            let matchesStatus = true;
-            if (statusFilter === 'running') matchesStatus = task.isRunning;
-            if (statusFilter === 'paused') matchesStatus = !task.isRunning;
-
-            if (matchesSearch && matchesStatus) {
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-            }
+            const c = document.getElementById(`container-${task.id}`);
+            if (!c) return;
+            const mText = text ? (task.name || '').toLowerCase().includes(text) : true;
+            const mStat = (stat === 'running') ? task.isRunning : (stat === 'paused' ? !task.isRunning : true);
+            c.style.display = (mText && mStat) ? 'block' : 'none';
         });
     }
 
     function checkDueDates() {
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
+        const today = new Date(); today.setHours(0,0,0,0);
         Object.values(tasks).forEach(task => {
             const row = document.getElementById(`row-${task.id}`);
             if (!row || !task.dueDate) return;
-
-            const due = new Date(task.dueDate);
-            const diffTime = due - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays <= 7) {
-                row.classList.add('due-soon');
-            } else {
-                row.classList.remove('due-soon');
-            }
+            const diff = Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24));
+            diff <= 7 ? row.classList.add('due-soon') : row.classList.remove('due-soon');
         });
     }
 
@@ -558,10 +408,8 @@
     function renderTasks() {
         const list = document.getElementById('task-list');
         const openDetails = Array.from(document.querySelectorAll('.task-details.active')).map(el => el.id.replace('details-', ''));
-        
         list.innerHTML = '';
         let globalTotalMs = 0;
-
         const sortedTasks = Object.values(tasks).sort((a, b) => a.order - b.order);
 
         sortedTasks.forEach(task => {
@@ -569,66 +417,57 @@
             globalTotalMs += taskTotal;
 
             const container = document.createElement('div');
-            container.className = 'task-container';
-            container.id = `container-${task.id}`;
-            container.setAttribute('draggable', 'true');
-            
-            // Event Listeners für Drag & Drop anhängen
+            container.className = 'task-container'; container.id = `container-${task.id}`; container.setAttribute('draggable', 'true');
             container.ondragstart = (e) => handleDragStart(e, task.id);
-            container.ondragover = (e) => handleDragOver(e);
-            container.ondragenter = (e) => handleDragEnter(e);
-            container.ondragleave = (e) => handleDragLeave(e);
-            container.ondrop = (e) => handleDrop(e, task.id);
-            container.ondragend = (e) => handleDragEnd(e);
+            container.ondragover = handleDragOver; container.ondragenter = handleDragEnter;
+            container.ondragleave = handleDragLeave; container.ondrop = (e) => handleDrop(e, task.id);
+            container.ondragend = handleDragEnd;
 
             let sessionsHtml = '';
             if (task.sessions.length === 0) {
-                sessionsHtml = '<tr><td colspan="3">No time tracked yet.</td></tr>';
+                sessionsHtml = '<tr><td colspan="4">No time tracked yet.</td></tr>';
             } else {
                 task.sessions.forEach((s, index) => {
-                    sessionsHtml += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${formatDateTime(s.start)} to ${formatDateTime(s.end)}</td>
-                            <td>${formatTime(s.duration)}</td>
-                        </tr>
-                    `;
+                    const isEditing = (editState.taskId === task.id && editState.sessionIndex === index);
+                    if (isEditing) {
+                        sessionsHtml += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>
+                                    <div class="edit-input-group">Start: <input type="datetime-local" id="edit-start-${task.id}-${index}" value="${toDatetimeLocal(s.start)}"></div>
+                                    <div class="edit-input-group">End: &nbsp;&nbsp;<input type="datetime-local" id="edit-end-${task.id}-${index}" value="${toDatetimeLocal(s.end)}"></div>
+                                </td>
+                                <td style="color:var(--text-muted); font-size:0.9em; vertical-align:middle;">Auto-calc</td>
+                                <td class="actions" style="vertical-align:middle;">
+                                    <button class="btn-success btn-small" onclick="saveEditSession('${task.id}', ${index})">Save</button>
+                                    <button class="btn-secondary btn-small" onclick="cancelEditSession()">Cancel</button>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        let p = `${formatDateTime(s.start)} to ${formatDateTime(s.end)}`, d = `<strong>${formatTime(s.duration)}</strong>`, a = `<button class="btn-secondary btn-small" onclick="startEditSession('${task.id}', ${index})">Edit</button>`;
+                        if (s.edited) {
+                            p = `<del style="color: #a0a0a0; font-size: 0.85em;">${formatDateTime(s.originalStart)} to ${formatDateTime(s.originalEnd)}</del><br>${p}`;
+                            d = `<del style="color: #a0a0a0; font-size: 0.85em;">${formatTime(s.originalDuration)}</del><br>${d}`;
+                            a += ` <button class="btn-warning btn-small" onclick="revertSession('${task.id}', ${index})" title="Undo edit">↺</button>`;
+                        }
+                        sessionsHtml += `<tr><td>${index + 1}</td><td>${p}</td><td>${d}</td><td class="actions">${a}</td></tr>`;
+                    }
                 });
             }
 
             container.innerHTML = `
                 <div class="task-row ${task.dueDate ? 'has-due' : ''}" id="row-${task.id}">
-                    
                     <div class="drag-handle" title="Drag to reorder">⋮⋮</div>
-
                     <input type="text" placeholder="Task description..." value="${task.name}" onchange="updateField('${task.id}', 'name', this.value)">
-                    
-                    <div>
-                        <small>Estimated (h):</small><br>
-                        <input type="number" step="0.5" placeholder="hrs" value="${task.estimatedHours}" onchange="updateField('${task.id}', 'estimatedHours', this.value)">
-                    </div>
-                    
-                    <div>
-                        <small>Due Date:</small><br>
-                        <input type="date" value="${task.dueDate}" onchange="updateField('${task.id}', 'dueDate', this.value)">
-                    </div>
-
-                    <div class="time-display-container">
-                        <div class="time-label">Total Time</div>
-                        <div class="time-display" id="time-${task.id}">${formatTime(taskTotal)}</div>
-                    </div>
-
+                    <div><small class="print-hide">Estimated (h):</small><br class="print-hide"><input type="number" step="0.5" placeholder="hrs" value="${task.estimatedHours}" onchange="updateField('${task.id}', 'estimatedHours', this.value)"></div>
+                    <div><small class="print-hide">Due Date:</small><br class="print-hide"><input type="date" value="${task.dueDate}" onchange="updateField('${task.id}', 'dueDate', this.value)"></div>
+                    <div class="time-display-container"><div class="time-label">Total Time</div><div class="time-display" id="time-${task.id}">${formatTime(taskTotal)}</div></div>
                     <div class="actions">
-                        ${task.isRunning 
-                            ? `<button class="btn-danger" onclick="stopTimer('${task.id}')">Stop</button>` 
-                            : `<button class="btn-success" onclick="startTimer('${task.id}')">Start</button>`
-                        }
+                        ${task.isRunning ? `<button class="btn-danger" onclick="stopTimer('${task.id}')">Stop</button>` : `<button class="btn-success" onclick="startTimer('${task.id}')">Start</button>`}
                     </div>
-                    
                     <div class="actions">
                         <button class="btn-secondary" onclick="toggleDetails('${task.id}')">Details</button>
-                        <button class="btn-export" onclick="exportSingle('${task.id}')">Export</button>
-                        <button class="btn-danger" onclick="deleteTask('${task.id}')">X</button>
                     </div>
                 </div>
                 
@@ -636,24 +475,16 @@
                     <div class="details-grid">
                         <div class="meta-info">
                             <strong>Task Details:</strong>
-                            <p>Created at: ${formatDateTime(task.createdAt)}</p>
-                            <p>Number of sessions: ${task.sessions.length}</p>
-                            <p>Current status: <span style="color: ${task.isRunning ? 'red' : 'green'}">${task.isRunning ? 'Timer running...' : 'Paused'}</span></p>
+                            <p>Created: ${formatDateTime(task.createdAt)}</p>
+                            <p>Sessions: ${task.sessions.length}</p>
+                            <p class="print-hide">Status: <span style="color: ${task.isRunning ? 'red' : 'green'}">${task.isRunning ? 'Running' : 'Paused'}</span></p>
                         </div>
                         <div>
-                            <strong>Session History (From - To):</strong>
-                            <div style="max-height: 150px; overflow-y: auto;">
+                            <strong>Session History:</strong>
+                            <div style="max-height: 250px; overflow-y: auto;">
                                 <table class="session-table">
-                                    <thead>
-                                        <tr>
-                                            <th>No.</th>
-                                            <th>Time Period</th>
-                                            <th>Duration</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${sessionsHtml}
-                                    </tbody>
+                                    <thead><tr><th style="width: 5%;">No.</th><th style="width: 55%;">Time Period</th><th style="width: 20%;">Duration</th><th class="actions" style="width: 20%;">Action</th></tr></thead>
+                                    <tbody>${sessionsHtml}</tbody>
                                 </table>
                             </div>
                         </div>
@@ -664,90 +495,119 @@
         });
 
         document.getElementById('global-total').innerText = formatTime(globalTotalMs);
-        checkDueDates();
-        applyFilters(); 
+        checkDueDates(); applyFilters(); 
     }
 
-    // --- GLOBAL TIMER INTERVAL ---
     setInterval(() => {
         let globalTotalMs = 0;
-        
         Object.values(tasks).forEach(task => {
             let taskTotal = getTaskTotalTime(task);
-            
             if (task.isRunning) {
-                const elapsed = Date.now() - task.startTime;
-                taskTotal += elapsed;
-                
+                taskTotal += (Date.now() - task.startTime);
                 const timeEl = document.getElementById(`time-${task.id}`);
                 if (timeEl) timeEl.innerText = formatTime(taskTotal);
             }
-            
             globalTotalMs += taskTotal;
         });
-
-        if (Object.values(tasks).some(t => t.isRunning)) {
-            document.getElementById('global-total').innerText = formatTime(globalTotalMs);
-        }
+        if (Object.values(tasks).some(t => t.isRunning)) document.getElementById('global-total').innerText = formatTime(globalTotalMs);
     }, 1000);
 
-    // --- EXPORT ---
+
+    // ==========================================
+    // NEU: JSON IMPORT / EXPORT
+    // ==========================================
+    
+    function exportJSON() {
+        Object.values(tasks).forEach(task => {
+            if(task.isRunning) { stopTimer(task.id); startTimer(task.id); }
+        });
+        
+        const dataStr = JSON.stringify(tasks, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `timetracker_backup_${getTodayString()}.json`;
+        link.click();
+    }
+
+    function importJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedTasks = JSON.parse(e.target.result);
+                if(confirm("Warning: This will overwrite your current data. Do you want to proceed?")) {
+                    tasks = importedTasks;
+                    saveData();
+                    normalizeOrder();
+                    renderTasks();
+                    alert("Data successfully imported!");
+                }
+            } catch (error) {
+                alert("Error: Invalid JSON file!");
+            }
+            event.target.value = ''; 
+        };
+        reader.readAsText(file);
+    }
+
+
+    // ==========================================
+    // EXPORT FUNKTIONEN (PDF & GESCHÜTZTE CSV)
+    // ==========================================
+    
+    function exportPDF() {
+        Object.values(tasks).forEach(task => {
+            if(task.isRunning) { stopTimer(task.id); startTimer(task.id); }
+        });
+        window.print();
+    }
+
     function downloadCSV(csvContent, filename) {
         const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const link = document.createElement("a"); const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url); link.setAttribute("download", filename); link.style.visibility = 'hidden';
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     function generateCSVLines(tasksToExport) {
-        let lines = ["Task;Session Start;Session End;Duration (Session);Total Task (So far);Estimated (h);Due Date;Created At"];
+        let lines = ["Task;Session Start;Session End;Duration (Session);Was Edited?;Original Duration;Total Task (So far);Estimated (h);Due Date;Created At"];
         let globalTotalAll = 0;
-
         tasksToExport.forEach(task => {
-            if(task.isRunning) {
-                stopTimer(task.id);
-                startTimer(task.id); 
-            }
-
-            const taskTotal = getTaskTotalTime(task);
-            globalTotalAll += taskTotal;
-            const taskName = task.name || 'Untitled';
-            const createdAt = formatDateTime(task.createdAt);
-
+            if(task.isRunning) { stopTimer(task.id); startTimer(task.id); }
+            const taskTotal = getTaskTotalTime(task); globalTotalAll += taskTotal;
+            const taskName = task.name || 'Untitled'; const createdAt = formatDateTime(task.createdAt);
             if (task.sessions.length === 0) {
-                lines.push(`${taskName};-;-;00:00:00;00:00:00;${task.estimatedHours};${task.dueDate};${createdAt}`);
+                lines.push(`${taskName};-;-;00:00:00;No;-;00:00:00;${task.estimatedHours};${task.dueDate};${createdAt}`);
             } else {
                 task.sessions.forEach(s => {
-                    lines.push(`${taskName};${formatDateTime(s.start)};${formatDateTime(s.end)};${formatTime(s.duration)};${formatTime(taskTotal)};${task.estimatedHours};${task.dueDate};${createdAt}`);
+                    lines.push(`${taskName};${formatDateTime(s.start)};${formatDateTime(s.end)};${formatTime(s.duration)};${s.edited ? "Yes" : "No"};${s.edited ? formatTime(s.originalDuration) : "-"};${formatTime(taskTotal)};${task.estimatedHours};${task.dueDate};${createdAt}`);
                 });
             }
         });
-
-        lines.push("");
-        lines.push(`Total of all tasks;;;;${formatTime(globalTotalAll)};;;`);
+        lines.push(""); lines.push(`Total of all tasks;;;;;;${formatTime(globalTotalAll)};;;`);
         return lines.join("\n");
     }
 
-    function exportSingle(id) {
-        const task = tasks[id];
-        const csv = generateCSVLines([task]);
-        downloadCSV(csv, `export_${task.name || 'task'}_${getTodayString()}.csv`);
+    function exportCSVProtected() {
+        const userInput = prompt("Please enter the admin password to export the CSV data:");
+        
+        if (userInput === null) {
+            return; 
+        }
+        
+        if (userInput === CSV_PASSWORD) {
+            const sortedTasks = Object.values(tasks).sort((a, b) => a.order - b.order);
+            downloadCSV(generateCSVLines(sortedTasks), `timetracking_complete_${getTodayString()}.csv`);
+        } else {
+            alert("Incorrect password! Export denied.");
+        }
     }
 
-    function exportAll() {
-        const sortedTasks = Object.values(tasks).sort((a, b) => a.order - b.order);
-        const csv = generateCSVLines(sortedTasks);
-        downloadCSV(csv, `timetracking_complete_${getTodayString()}.csv`);
-    }
-
-    window.onload = () => {
-        loadData();
-    };
+    window.onload = () => loadData();
 </script>
 
 </body>
