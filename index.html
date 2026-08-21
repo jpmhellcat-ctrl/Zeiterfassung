@@ -208,9 +208,9 @@
 
 <script>
     // ==========================================
-    // DEIN PASSWORT FÜR DEN CSV-EXPORT
+    // DEIN ADMIN PASSWORT (Für Export & Löschen)
     // ==========================================
-    const CSV_PASSWORD = "LTGSwitzerlandZeit"; 
+    const ADMIN_PASSWORD = "LTGSwitzerlandZeit"; 
     
     const STORAGE_KEY = 'timeTrackerTasks_v3';
     let tasks = {};
@@ -219,7 +219,7 @@
 
     document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-GB');
 
-    // --- DATA HANDLING (Mit reparierter Rettungs-Logik für alte Versionen) ---
+    // --- DATA HANDLING ---
     function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
 
     function normalizeOrder() {
@@ -228,7 +228,6 @@
     }
 
     function loadData() {
-        // Wir suchen in allen bisherigen Speicher-Fächern nach Daten!
         const savedV3 = localStorage.getItem('timeTrackerTasks_v3');
         const savedV2 = localStorage.getItem('timeTrackerTasks_v2'); 
         const savedV1 = localStorage.getItem('timeTrackerTasks_v1'); 
@@ -240,9 +239,8 @@
             loadedTasks = JSON.parse(savedV3);
         } else if (savedV2) {
             loadedTasks = JSON.parse(savedV2);
-            needsSave = true; // Wir müssen es als V3 neu speichern
+            needsSave = true; 
         } else if (savedV1) {
-            // Daten aus der allerersten Version retten
             let oldTasks = JSON.parse(savedV1);
             loadedTasks = {};
             Object.values(oldTasks).forEach(t => {
@@ -350,9 +348,23 @@
 
     function toggleDetails(id) { document.getElementById(`details-${id}`).classList.toggle('active'); }
 
+    // --- NEU: PASSWORT-SCHUTZ BEIM LÖSCHEN ---
     function deleteTask(id) {
-        if(confirm("Are you sure you want to delete this row and all tracked time?")) {
-            delete tasks[id]; normalizeOrder(); saveData(); renderTasks();
+        const userInput = prompt("Admin authentication required.\nPlease enter the password to delete this task:");
+        
+        if (userInput === null) {
+            return; // Benutzer hat auf Abbrechen geklickt
+        }
+        
+        if (userInput === ADMIN_PASSWORD) {
+            if(confirm("Are you sure you want to delete this row and ALL tracked time? This cannot be undone!")) {
+                delete tasks[id]; 
+                normalizeOrder(); 
+                saveData(); 
+                renderTasks();
+            }
+        } else {
+            alert("Incorrect password! Task deletion denied.");
         }
     }
 
@@ -502,6 +514,7 @@
                     </div>
                     <div class="actions">
                         <button class="btn-secondary" onclick="toggleDetails('${task.id}')">Details</button>
+                        <button class="btn-danger" onclick="deleteTask('${task.id}')">X</button>
                     </div>
                 </div>
                 
@@ -627,13 +640,13 @@
     }
 
     function exportCSVProtected() {
-        const userInput = prompt("Please enter the admin password to export the CSV data:");
+        const userInput = prompt("Admin authentication required.\nPlease enter the password to export the CSV data:");
         
         if (userInput === null) {
             return; 
         }
         
-        if (userInput === CSV_PASSWORD) {
+        if (userInput === ADMIN_PASSWORD) {
             const sortedTasks = Object.values(tasks).sort((a, b) => a.order - b.order);
             downloadCSV(generateCSVLines(sortedTasks), `timetracking_complete_${getTodayString()}.csv`);
         } else {
