@@ -143,7 +143,7 @@
         .edit-input-group { margin-bottom: 5px; }
         .edit-input-group input { padding: 4px; border: 1px solid var(--border); border-radius: 3px; font-size: 0.9em;}
 
-        /* DRUCK- UND PDF-STILANWEISUNGEN (Read-Only Ansicht) */
+        /* DRUCK- UND PDF-STILANWEISUNGEN */
         @media print {
             body { background: #fff; padding: 0; color: #000; }
             header, .filters-bar, .drag-handle, .actions, .settings-toggle { display: none !important; }
@@ -219,7 +219,7 @@
 
     document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-GB');
 
-    // --- DATA HANDLING ---
+    // --- DATA HANDLING (Mit reparierter Rettungs-Logik für alte Versionen) ---
     function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
 
     function normalizeOrder() {
@@ -228,15 +228,49 @@
     }
 
     function loadData() {
-        const savedV3 = localStorage.getItem(STORAGE_KEY);
+        // Wir suchen in allen bisherigen Speicher-Fächern nach Daten!
+        const savedV3 = localStorage.getItem('timeTrackerTasks_v3');
+        const savedV2 = localStorage.getItem('timeTrackerTasks_v2'); 
+        const savedV1 = localStorage.getItem('timeTrackerTasks_v1'); 
+
+        let loadedTasks = null;
+        let needsSave = false;
+
         if (savedV3) {
-            tasks = JSON.parse(savedV3);
+            loadedTasks = JSON.parse(savedV3);
+        } else if (savedV2) {
+            loadedTasks = JSON.parse(savedV2);
+            needsSave = true; // Wir müssen es als V3 neu speichern
+        } else if (savedV1) {
+            // Daten aus der allerersten Version retten
+            let oldTasks = JSON.parse(savedV1);
+            loadedTasks = {};
+            Object.values(oldTasks).forEach(t => {
+                t.createdAt = Date.now();
+                t.sessions = [];
+                for(let date in t.history) {
+                    t.sessions.push({
+                        start: new Date(date).getTime(),
+                        end: new Date(date).getTime() + t.history[date],
+                        duration: t.history[date],
+                        edited: false
+                    });
+                }
+                loadedTasks[t.id] = t;
+            });
+            needsSave = true;
+        }
+
+        if (loadedTasks && Object.keys(loadedTasks).length > 0) {
+            tasks = loadedTasks;
             Object.values(tasks).forEach(t => { if(!t.sessions) t.sessions = []; });
             normalizeOrder();
             renderTasks();
+            if (needsSave) saveData(); 
         } else {
             addTask();
         }
+        
         const settings = localStorage.getItem('timeTrackerSettings');
         if(settings) document.getElementById('warn-toggle').checked = JSON.parse(settings).warnToggle;
     }
@@ -514,7 +548,7 @@
 
 
     // ==========================================
-    // NEU: JSON IMPORT / EXPORT
+    // JSON IMPORT / EXPORT
     // ==========================================
     
     function exportJSON() {
